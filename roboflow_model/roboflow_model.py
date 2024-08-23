@@ -1,4 +1,4 @@
-from utils import get_position_from_string, get_uploaded_files, load_api_keys
+from utils import get_position_from_string, load_api_keys
 from inference_sdk import InferenceHTTPClient, InferenceConfiguration
 from PIL import Image
 import supervision as sv

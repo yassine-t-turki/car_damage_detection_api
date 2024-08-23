@@ -131,11 +131,9 @@
             <label for="chosen_model">Model Type:</label>
             <select name="chosen_model" id="chosen_model" onchange="updateForm()">
                 <option value="bounding_box" {% if selected_model == 'bounding_box' %}selected{% endif %}>Bounding Box</option>
-                <option value="mask_segmentation" {% if selected_model == 'mask_segmentation' %}selected{% endif %}>Mask Segmentation</option>
-                <option value="all_models" {% if selected_model == 'all_models' %}selected{% endif %}>All Models</option>
             </select>
             
-            <div id="bounding_box_options" style="display: {% if selected_model == 'bounding_box' or selected_model == 'all_models' %}block{% else %}none{% endif %};">
+            <div id="bounding_box_options" style="display: {% if selected_model == 'bounding_box' %}block{% else %}none{% endif %};">
                 <label for="threshold_bbox">Confidence Threshold for Bounding Box:</label>
                 <input type="number" name="threshold_bbox" id="threshold_bbox" step="0.01" min="0" max="1" value="{{ selected_threshold_bbox }}">
                 
@@ -143,11 +141,6 @@
                 <select name="label_position" id="label_position">
                     {{ label_position_options|safe }}
                 </select>
-            </div>
-            
-            <div id="mask_segmentation_options" style="display: {% if selected_model == 'mask_segmentation' or selected_model == 'all_models' %}block{% else %}none{% endif %};">
-                <label for="threshold_mask">Confidence Threshold for Mask Segmentation:</label>
-                <input type="number" name="threshold_mask" id="threshold_mask" step="0.01" min="0" max="1" value="{{ selected_threshold_mask }}">
             </div>
             
             <input type="submit" value="Run Scan">
@@ -164,11 +157,9 @@
             <label for="chosen_model_rerun">Model Type:</label>
             <select name="chosen_model_rerun" id="chosen_model_rerun" onchange="updateFormRerun()">
                 <option value="bounding_box" {% if selected_model == 'bounding_box' %}selected{% endif %}>Bounding Box</option>
-                <option value="mask_segmentation" {% if selected_model == 'mask_segmentation' %}selected{% endif %}>Mask Segmentation</option>
-                <option value="all_models" {% if selected_model == 'all_models' %}selected{% endif %}>All Models</option>
             </select>
             
-            <div id="bounding_box_options_rerun" style="display: {% if selected_model == 'bounding_box' or selected_model == 'all_models' %}block{% else %}none{% endif %};">
+            <div id="bounding_box_options_rerun" style="display: {% if selected_model == 'bounding_box' %}block{% else %}none{% endif %};">
                 <label for="threshold_bbox_rerun">Confidence Threshold for Bounding Box:</label>
                 <input type="number" name="threshold_bbox_rerun" id="threshold_bbox_rerun" step="0.01" min="0" max="1" value="{{ selected_threshold_bbox }}">
                 
@@ -178,10 +169,6 @@
                 </select>
             </div>
             
-            <div id="mask_segmentation_options_rerun" style="display: {% if selected_model == 'mask_segmentation' or selected_model == 'all_models' %}block{% else %}none{% endif %};">
-                <label for="threshold_mask_rerun">Confidence Threshold for Mask Segmentation:</label>
-                <input type="number" name="threshold_mask_rerun" id="threshold_mask_rerun" step="0.01" min="0" max="1" value="{{ selected_threshold_mask }}">
-            </div>
 
             
             <input type="submit" value="Rerun Analysis">
@@ -218,14 +205,12 @@
     <script>
         function updateForm() {
             const model = document.getElementById('chosen_model').value;
-            document.getElementById('bounding_box_options').style.display = (model === 'bounding_box' || model === 'all_models') ? 'block' : 'none';
-            document.getElementById('mask_segmentation_options').style.display = (model === 'mask_segmentation' || model === 'all_models') ? 'block' : 'none';
+            document.getElementById('bounding_box_options').style.display = (model === 'bounding_box') ? 'block' : 'none';
         }
 
         function updateFormRerun() {
             const model = document.getElementById('chosen_model_rerun').value;
-            document.getElementById('bounding_box_options_rerun').style.display = (model === 'bounding_box' || model === 'all_models') ? 'block' : 'none';
-            document.getElementById('mask_segmentation_options_rerun').style.display = (model === 'mask_segmentation' || model === 'all_models') ? 'block' : 'none';
+            document.getElementById('bounding_box_options_rerun').style.display = (model === 'bounding_box') ? 'block' : 'none';
         }
 
         // Initialize the form display based on the selected model on page load

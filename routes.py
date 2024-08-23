@@ -1,8 +1,6 @@
 from config import UPLOAD_DIR, ANNOTATED_DIR, templates
 from utils import get_uploaded_files
 from roboflow_model.roboflow_model import run_bbox
-from mask_model.mask import run_mask
-from utils import combine_images
 from chatbot.chatbot import ChatSession
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi import File, UploadFile, Form
@@ -12,7 +10,7 @@ import json
 import os
 
 async def read_root_wrapper(request: Request, image_display: str = '', label_position: str = "TOP_RIGHT", 
-                            threshold_bbox: float = 0.4, threshold_mask: float = 0.4,
+                            threshold_bbox: float = 0.4, 
                             file_name: str = '', chosen_model: str = 'bounding_box'):
     images = get_uploaded_files()
     image_options = "".join(f'<option value="{img}">{img}</option>' for img in images)
@@ -28,7 +26,6 @@ async def read_root_wrapper(request: Request, image_display: str = '', label_pos
         "image_display": image_display,
         "label_position_options": label_position_options,
         "selected_label_position": label_position,
-        "selected_threshold_mask": threshold_mask,
         "selected_threshold_bbox": threshold_bbox,
         "file_name": file_name,
         "selected_model": chosen_model
@@ -39,7 +36,6 @@ async def read_root_wrapper(request: Request, image_display: str = '', label_pos
 
 
 async def upload_image_wrapper(request: Request, file: UploadFile = File(...),
-                          threshold_mask: float = Form(default=0.4),
                           threshold_bbox: float = Form(default=0.4),
                           label_position: str = Form(default="TOP_RIGHT"),
                           chosen_model: str = Form(default="bounding_box"), chat_session: ChatSession = ChatSession()):
@@ -55,16 +51,6 @@ async def upload_image_wrapper(request: Request, file: UploadFile = File(...),
 
     if chosen_model == "bounding_box":
         annotated_image, metadata = run_bbox(threshold_bbox, file_path, label_position)
-        
-    elif chosen_model == "mask_segmentation":
-        annotated_image, metadata = run_mask(threshold_mask, file_path)
-
-    elif chosen_model == "all_models":
-        annotated_image, metadata_bbox = run_bbox(threshold_bbox, file_path, label_position)
-        mask_image, metadata_mask = run_mask(threshold_mask, file_path)
-        combined_image = combine_images(annotated_image, mask_image, align='horizontal')
-        annotated_image = combined_image
-        metadata = {"roboflow_detections":metadata_bbox }
 
     if annotated_image:
         annotated_image_path = os.path.join(ANNOTATED_DIR, file.filename)
@@ -94,7 +80,6 @@ async def upload_image_wrapper(request: Request, file: UploadFile = File(...),
         "image_display": f'<h2>Annotated Image:</h2><img src="/images/{file.filename}" alt="Annotated Image">',
         "label_position_options": label_position_options,
         "selected_label_position": label_position,
-        "selected_threshold_mask": threshold_mask,
         "selected_threshold_bbox": threshold_bbox,
         "file_name": file.filename,
         "selected_model": chosen_model,
@@ -111,7 +96,6 @@ async def get_image_wrapper(filename: str):
     return StreamingResponse(open(file_path, "rb"), media_type="image/png")
 
 async def rerun_inference_wrapper(request: Request, filename: str = Form(...),
-                          threshold_mask_rerun: float = Form(default=0.4),
                           threshold_bbox_rerun: float = Form(default=0.4),
                           label_position: str = Form(default="TOP_RIGHT"),
                           chosen_model_rerun: str = Form(default="bounding_box"), chat_session: ChatSession = ChatSession()):
@@ -125,17 +109,6 @@ async def rerun_inference_wrapper(request: Request, filename: str = Form(...),
     metadata = {}
     if chosen_model_rerun == "bounding_box":
         annotated_image, metadata = run_bbox(threshold_bbox_rerun, file_path, label_position)
-
-    elif chosen_model_rerun == "mask_segmentation":
-        annotated_image, metadata = run_mask(threshold_mask_rerun, file_path)
-    
-
-    elif chosen_model_rerun == "all_models":
-        annotated_image, metadata_bbox = run_bbox(threshold_bbox_rerun, file_path, label_position)
-        mask_image, metadata_mask = run_mask(threshold_mask_rerun, file_path)
-        combined_image = combine_images(annotated_image, mask_image, align='horizontal')
-        annotated_image = combined_image
-        metadata = {"roboflow_detections":metadata_bbox}
 
     if annotated_image:
         annotated_image_path = os.path.join(ANNOTATED_DIR, filename)
@@ -165,7 +138,6 @@ async def rerun_inference_wrapper(request: Request, filename: str = Form(...),
         "image_display": f'<h2>Annotated Image:</h2><img src="/images/{filename}" alt="Annotated Image">',
         "label_position_options": label_position_options,
         "selected_label_position": label_position,
-        "selected_threshold_mask": threshold_mask_rerun,
         "selected_threshold_bbox": threshold_bbox_rerun,
         "file_name": filename,
         "selected_model": chosen_model_rerun,
